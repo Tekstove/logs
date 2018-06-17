@@ -1,0 +1,33 @@
+version: '3'
+services:
+  kibana:
+    image: docker.elastic.co/kibana/kibana-oss:6.3.0
+    environment:
+      ELASTICSEARCH_URL: http://elastic:9200
+    depends_on:
+      - elastic
+  elastic:
+    image: docker.elastic.co/elasticsearch/elasticsearch-oss:6.3.0
+    environment:
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms1024m -Xmx1024m"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - ./elastic/data:/usr/share/elasticsearch/data
+  filebeat-api-apache:
+    image: docker.elastic.co/beats/filebeat:6.3.0
+    volumes:
+      - ./filebeat-api-apache/logs:/logs
+      - ./filebeat-api-apache/filebeat.yml:/usr/share/filebeat/filebeat.yml
+    depends_on:
+      - elastic
+  filebeat-site-apache:
+    image: docker.elastic.co/beats/filebeat:6.3.0
+    volumes:
+      - ./filebeat-site-apache/logs:/logs
+      - ./filebeat-site-apache/filebeat.yml:/usr/share/filebeat/filebeat.yml
+    depends_on:
+      - elastic
